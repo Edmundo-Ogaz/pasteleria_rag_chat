@@ -19,26 +19,31 @@ async def start():
 
 @cl.on_message
 async def main(message: cl.Message):
+
+    msg = cl.Message(content=".")
+    await msg.stream_token("..")
+    await cl.sleep(1)
+    
     session_id = cl.user_session.get("session_id")
     response = call_backend(message.content, session_id)
-    await cl.Message(
-        content = response
-    ).send()
 
-def call_backend(user_message, session_id):
+    msg.content = response
+    await msg.update()
+
+def call_backend(user_message, session_id) -> str:
     try:
         url = os.environ.get("RAG_MODEL")
         print("url", url)
         headers = {"Content-Type": "application/json", "sessionId": session_id}
         data = {"query": user_message}
-        response = requests.post(url, json=data, headers=headers, timeout=(5, 50))
+        response = requests.post(url, json=data, headers=headers, timeout=(5, 40))
         response.raise_for_status()
         backend_response = response.json()
         print(backend_response)
         return backend_response['respuesta']
     except requests.exceptions.RequestException as e:
         print(f"Error al llamar al backend: {e}")
-        return {"error": str(e)}
+        return "Disculpa no puedo responder en este momento"
     except requests.exceptions.Timeout as e:
         print(f"Error de timeout: {e}")
-        return {"error": str(e)}
+        return "Disculpa no puedo responder en este momento"
