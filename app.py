@@ -36,11 +36,13 @@ def call_backend(user_message, session_id) -> str:
         print("url", url)
         headers = {"Content-Type": "application/json", "sessionId": session_id}
         data = {"query": user_message}
-        response = requests.post(url, json=data, headers=headers, timeout=(5, 40))
+        # response = requests.post(url, json=data, headers=headers, timeout=(5, 40))
+        response = requests.get(url+"?query="+user_message, timeout=(5, 40))
         response.raise_for_status()
         backend_response = response.json()
         print(backend_response)
-        return backend_response['respuesta']
+        # return backend_response['respuesta']
+        return backend_response['response']
     except requests.exceptions.RequestException as e:
         print(f"Error al llamar al backend: {e}")
         return "Disculpa no puedo responder en este momento"
